@@ -10,6 +10,7 @@
 	</form>
 
 	<?php
+		$page_source='';
 		function test_input($data) {
 			//$data = trim($data);
 			//$data = stripslashes($data);
@@ -19,7 +20,7 @@
 		function valid_id($data) {
 			preg_match('/(?:v=|\/)([0-9A-Za-z_-]{11}).*/', $data, $matches);
 			//var_dump($matches);
-			//echo "$data";
+			echo "Video ID: " . $matches[1] . "<br>";
 			if (!empty($matches[1])) {
 				return $matches[1];
 			} else {
@@ -29,8 +30,10 @@
 		function valid_url($data) {
 			//check if the url leads to an actual video
 			$url = "https://www.youtube.com/watch?v=$data";
+			echo "Checking " . $url . "<br>";
+			global $page_source;
 			$page_source = file_get_contents($url);
-			//echo "$page_source";
+			//echo "Source: " . "$page_source";
 			if (!preg_match("/'VIDEO_ID': \"$data\"/", $page_source)) {
 				return false;
 			}
@@ -50,6 +53,7 @@
 			//validate url
 			$youtubeid = valid_id($youtubeurl);
 			if ($youtubeid) {
+				//valid_url also stores the youtube page's source into $page_source
 				$youtubelink = valid_url($youtubeid);
 			} else {
 				die('invalid video id');
@@ -59,6 +63,14 @@
 			} else {
 				die('unable to find video');
 			}
+
+			//need to parse out all of the available download links from $page_source
+			//first get available itags
+			//echo $page_source;
+			preg_match_all('/itag=\K[0-9]*/', $page_source, $itags);
+			var_dump($itags);
+			
+			
 			$link = new mysqli("127.0.0.1", "root", "password");
 			$create_db = 'CREATE DATABASE IF NOT EXISTS youtubedb';
 						
