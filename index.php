@@ -111,9 +111,9 @@
 			//now we have the links and the itags which give information on each download.
 			//we need to display the information on the site.
 			
-			//test downloading from itag = 18;
+			//test downloading from itag = 18 to shared vagrant folder
 			
-			$path = "/var/www/youtubedownload/media";
+			$path = "/vagrant";
 			if (!is_dir($path)) {
 				mkdir($path);
 			}
@@ -127,9 +127,11 @@
 			echo "$test_download_link" . '<br>';
 			$filetype = 'mp4';
 			echo 'Filetype: ' . "$filetype" . '<br>';
-			file_put_contents("$path/$title.$filetype", file_get_contents("$test_download_link"));
-			$directory = getcwd();
-			echo "$directory" . '<br>';
+			if (file_put_contents("$path/$title.$filetype", file_get_contents("$test_download_link"))) {
+				echo 'saved file to machine';
+			}
+			//$directory = getcwd();
+			//echo "$directory" . '<br>';
 			$link = new mysqli("127.0.0.1", "root", "password");
 			$create_db = 'CREATE DATABASE IF NOT EXISTS youtubedb';
 			
