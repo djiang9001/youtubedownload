@@ -12,11 +12,12 @@
 	<?php
 		$page_source='';
 		function test_input($data) {
-			//$data = trim($data);
+			$data = trim($data);
 			//$data = stripslashes($data);
-			//$data = htmlspecialchars($data);
+			$data = htmlspecialchars($data);
 			return $data;
 		}
+		
 		function valid_id($data) {
 			preg_match('/(?:v=|\/)([0-9A-Za-z_-]{11}).*/', $data, $matches);
 			//var_dump($matches);
@@ -27,6 +28,7 @@
 				return false;
 			}
 		}
+		
 		function valid_url($data) {
 			//check if the url leads to an actual video
 			$url = "https://www.youtube.com/watch?v=$data";
@@ -40,6 +42,12 @@
 			return $url;
 		}
 		
+		function decode_url_array(&$arr_of_urls){
+			foreach($arr_of_urls as &$value) {
+				$value = urldecode($value);
+			}
+			unset($value);
+		}
 		
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$link = new mysqli("127.0.0.1", "root", "password");
@@ -65,11 +73,34 @@
 			}
 
 			//need to parse out all of the available download links from $page_source
-			//first get available itags
-			//echo $page_source;
-			preg_match_all('/itag=\K[0-9]*/', $page_source, $itags);
-			var_dump($itags);
+			//this gets a non-distinct array of available itags
+			//preg_match_all('/itag=\K[0-9]*/', $page_source, $itags);
+			//echo '<pre>'; print_r($itags); echo '</pre>';
 			
+			//use regex /url=\K(?:.*?)\\\/ to get urls
+			//use regex /itag=\K[0-9]*/ to get itags
+			//$download_links[0] is an array of encoded urls
+			//$itags is an array of itags corresponding to urls
+			
+			if (preg_match_all('/url=\K(?:.*?)(?=\\\|",)/', $page_source, $download_links)) {
+				echo 'Successfully retrieved download links <br>';
+			} else {
+				echo 'Failed to retrieve download links <br>';
+			}
+			
+			//echo '<pre>'; print_r($download_links); echo '</pre>';
+			decode_url_array($download_links[0]);
+                        echo '<pre>'; print_r($download_links); echo '</pre>';
+			$itags = [];
+			foreach($download_links[0] as $key => $value) {
+				preg_match('/itag=\K[0-9]*/', $value, $temp);
+				$itags[$key] = $temp[0];
+			}
+			echo '<pre>'; print_r($itags); echo '</pre>';
+			//echo $page_source;
+			
+			//now we have the links and the itags which give information on each download.
+			//we need to display the information on the site.
 			
 			$link = new mysqli("127.0.0.1", "root", "password");
 			$create_db = 'CREATE DATABASE IF NOT EXISTS youtubedb';
