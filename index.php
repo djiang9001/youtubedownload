@@ -48,6 +48,14 @@
 			}
 			unset($value);
 		}
+
+		function get_video_title() {
+			global $page_source;
+			if (!preg_match('/<meta name="title" content="\K.*(?=")/', $page_source, $title)) {
+				echo 'Title not found <br>';
+			}
+			return $title[0];
+		}
 		
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$link = new mysqli("127.0.0.1", "root", "password");
@@ -71,7 +79,8 @@
 			} else {
 				die('unable to find video');
 			}
-
+			$title = get_video_title();
+			echo 'Title of video: ' . "$title" . '<br>';
 			//need to parse out all of the available download links from $page_source
 			//this gets a non-distinct array of available itags
 			//preg_match_all('/itag=\K[0-9]*/', $page_source, $itags);
@@ -82,7 +91,7 @@
 			//$download_links[0] is an array of encoded urls
 			//$itags is an array of itags corresponding to urls
 			
-			if (preg_match_all('/url=\K(?:.*?)(?=\\\|",)/', $page_source, $download_links)) {
+			if (preg_match_all('/url=\K(?:.*?)(?=\\\|",|,)/', $page_source, $download_links)) {
 				echo 'Successfully retrieved download links <br>';
 			} else {
 				echo 'Failed to retrieve download links <br>';
@@ -102,9 +111,28 @@
 			//now we have the links and the itags which give information on each download.
 			//we need to display the information on the site.
 			
+			//test downloading from itag = 18;
+			
+			$path = "/var/www/youtubedownload/media";
+			if (!is_dir($path)) {
+				mkdir($path);
+			}
+			$index_itag_18 = NULL;
+			foreach ($itags as $key => $value) {
+				if ($value == '18') {
+					$index_itag_18 = $key;
+				}
+			}
+			$test_download_link = $download_links[0][$index_itag_18];
+			echo "$test_download_link" . '<br>';
+			$filetype = 'mp4';
+			echo 'Filetype: ' . "$filetype" . '<br>';
+			file_put_contents("$path/$title.$filetype", file_get_contents("$test_download_link"));
+			$directory = getcwd();
+			echo "$directory" . '<br>';
 			$link = new mysqli("127.0.0.1", "root", "password");
 			$create_db = 'CREATE DATABASE IF NOT EXISTS youtubedb';
-						
+			
 			if ($link->query($create_db)) {
 				echo "Successfully created database <br>";
 			} else {
