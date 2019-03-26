@@ -112,7 +112,7 @@
 			//we need to display the information on the site.
 			
 			//test downloading from itag = 18 to shared vagrant folder
-			
+			/*
 			$path = "/vagrant";
 			if (!is_dir($path)) {
 				mkdir($path);
@@ -131,7 +131,8 @@
 				echo 'saved file to machine';
 			}
 			//$directory = getcwd();
-			//echo "$directory" . '<br>';
+			//echo "$directory" . '<br>';*/
+			
 			$link = new mysqli("127.0.0.1", "root", "password");
 			$create_db = 'CREATE DATABASE IF NOT EXISTS youtubedb';
 			
